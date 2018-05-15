@@ -1,2 +1,3 @@
 # Thesis
-MA thesis for imbalanced data classification
+MA thesis for imbalanced data classification.
+# 
