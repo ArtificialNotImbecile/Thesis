@@ -51,7 +51,7 @@ class SimulationData(object):
     def double_center(self):
         blobs = datasets.make_blobs(n_samples=self.minor_num, random_state=self.rs, centers= [[10,10], [7,7]],cluster_std=0.4)
         no_structure = np.random.rand(self.total_num, 2)*9+3, None
-        data1 = [[i,j] for i,j in zip(no_structure[0][:,0],no_structure[0][:,1]) if not ((6<=i<=8) and (6<=j<=8))]
+        data1 = [[i,j] for i,j in zip(no_structure[0][:,0],no_structure[0][:,1]) if not ((5.7<=i<=8.3) and (5.7<=j<=8.3))]
         data1 = np.array(data1)
         data1 = [[i,j] for i,j in zip(data1[:,0],data1[:,1]) if not ((9<=i<=11) and (9<=j<=11))]
         data1 = np.array(data1)
