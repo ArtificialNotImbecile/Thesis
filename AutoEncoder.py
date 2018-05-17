@@ -5,13 +5,14 @@ from keras import regularizers
 import matplotlib.pyplot as plt
 
 class AutoEncoder(object):
-    def __init__(self, layers=[784, 32, 784], activation='relu',regularize=False):
+    def __init__(self, layers=[784, 32, 784], activation='relu', final_actication='sigmoid',regularize=False):
         self.num_layers = len(layers)
         self.layers = layers
         assert self.num_layers%2!=0
         self.activation = activation
         self.regularize = regularize
-        
+        self.final_actication = final_actication
+
     def compile(self, optimizer='adadelta', loss='binary_crossentropy'):
         if self.regularize:
             #encoder part
@@ -27,9 +28,9 @@ class AutoEncoder(object):
                 decoded = Dense(self.layers[j], activation=self.activation, activity_regularizer=regularizers.l1(10e-5))(decoded)
             # ???????????????is this correct????????????????sigmoid? and don't use regularizers?
             if self.num_layers !=3:
-                decoded = Dense(self.layers[-1], activation='sigmoid')(decoded)
+                decoded = Dense(self.layers[-1], activation=self.final_actication)(decoded)
             else:
-                decoded = Dense(self.layers[-1], activation='sigmoid')(encoded)
+                decoded = Dense(self.layers[-1], activation=self.final_actication)(encoded)
             self.autoencoder = Model(input_img, decoded)
             self.encoder = Model(input_img, encoded)
             # Decoder is a little bit tricker
@@ -56,9 +57,9 @@ class AutoEncoder(object):
                 decoded = Dense(self.layers[j], activation=self.activation)(decoded)
             # ???????????????is this correct????????????????
             if self.num_layers !=3:
-                decoded = Dense(self.layers[-1], activation='sigmoid')(decoded)
+                decoded = Dense(self.layers[-1], activation=self.final_actication)(decoded)
             else:
-                decoded = Dense(self.layers[-1], activation='sigmoid')(encoded)
+                decoded = Dense(self.layers[-1], activation=self.final_actication)(encoded)
             self.autoencoder = Model(input_img, decoded)
             self.encoder = Model(input_img, encoded)
             # Decoder is a little bit tricker
@@ -71,21 +72,21 @@ class AutoEncoder(object):
             # create the decoder model
             self.decoder = Model(encoded_input, decoder_layer)
             self.autoencoder.compile(optimizer=optimizer, loss=loss)
-            
+
     def fit(self, x, y, epochs=100, batch_size=256, shuffle=True, **kwarg):
         self.autoencoder.fit(x, y,
                 epochs=epochs,
                 batch_size=batch_size,
                 shuffle=shuffle,
                 **kwarg)
-        
+
     def get_encoded_imgs(self, x_new):
         return self.encoder.predict(x_new)
-    
+
     def get_decoded_imgs(self, x_new):
         encoded_imgs = self.encoder.predict(x_new)
         return self.decoder.predict(encoded_imgs)
-    
+
     def comparison_plot(self, x_new, n=10, figsize=(20,4)):
         plt.figure(figsize=(20, 4))
         decoded_imgs = self.get_decoded_imgs(x_new)
@@ -104,7 +105,10 @@ class AutoEncoder(object):
             ax.get_xaxis().set_visible(False)
             ax.get_yaxis().set_visible(False)
         plt.show()
-        
-def add_noise_to_data(x, noise_factor=0.5):
+
+def add_noise_to_data(x, noise_factor=0.5,clip=False):
         x_noisy = x + noise_factor * np.random.normal(loc=0.0, scale=1.0, size=x.shape)
-        return np.clip(x_noisy, 0., 1.)    
+        if clip:
+            return np.clip(x_noisy, 0., 1.)
+        else:
+            return x_noisy
